@@ -1,0 +1,32 @@
+extends ../layout
+
+block content
+
+
+    // Masthead 
+    .masthead
+     .container.d-flex.h-100.align-items-center
+        .mx-auto 
+            .card(style="opacity:0.90")
+                .card-header.bg-transparent 
+                    h3.text-center(style="text-color:black;font-weight:800;font-style:oblique") Nueva Usuario
+                .card-body
+                    form(action="/usuarios/"+usuario.id+"/update" method="post")
+                        .form-group
+                            label(for="nombre") Nombre:
+                            input#nombre.form-control(type="text" name="nombre" value=usuario.nombre class=errors.nombre? "is-invalid":"")
+                            if errors.nombre
+                                small#nombreHelp.text-danger=errors.nombre.message
+                        .form-group
+                            label(for="email") Email:
+                            input#email.form-control(type="email"  readonly value=usuario.email class=errors.email? "is-invalid":"")
+                            if errors.email
+                                small#nombreHelp.text-danger=errors.email.message
+                        .card-footer     
+                            input.btn.btn-primary.float-right(type='submit',value="OK")
+                            button(class="btn btn-outline-dark float-right " href="/usuarios") Volver
+            
+    
+
+    
+    

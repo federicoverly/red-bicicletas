@@ -1,82 +1,126 @@
-var Bicicleta = require('../../models/bicicleta')
-var request = require('request')
-var server = require('../../bin/www')
-var mongoose = require('mongoose')
+var mongoose = require("mongoose");
+var Bicicleta = require("../../models/Bibicleta");
+var request = require("request");
+var server = require("../../bin/www");
 
-var base_url = 'http://localhost/3000/api/bicicletas'
+var mongo2 = new mongoose.Mongoose();
 
+var base_url = "http://localhost:3000/api/bicicletas";
 
-describe('Bicicleta API', () => {
-    beforeEach(function(done){
-        var mongoDB = 'mongodb://localhost/testdb'
-        mongoose.connect(mongoDB, { useNewUrlParser: true })
+describe("Bicicleta APi", () => {
+    beforeEach(function (done) {
+        setTimeout(function () {
+            //Connection to the Database (Test Database)
+            var mongoDB = "mongodb://localhost/testdb";
+            mongo2.connect(mongoDB, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+            });
+            var db = mongo2.connection;
+            db.on("error", console.error.bind(console, "connection error"));
+            db.once("open", function () {
+                console.log("We are connected to test database!");
+            });
+            done(); // es par terminar el beforeEach de otra manera no terminaria el metodo
+        }, 100);
+    });
 
-        const db = mongoose.connection;
-        db.on('error', console.error.bind(console, 'connection error'))
-        db.once('open', function(){
-            console.log('We are connected to test database');
-            done();
-        })
-    })
-
-    afterEach(function(done){
-        Bicicleta.deleteMany({}, function (err, success){
+    afterEach(function (done) {
+        Bicicleta.deleteMany({}, function (err, success) {
             if (err) console.log(err);
             done();
-        })
-    })
+        });
+    });
 
-
-    describe('GET_BICICLETAS /', () => {
-        it('Status 200', (done) => {         
-            request.get(base_url, function (error, response, body){
-                var result = JSON.parse(body)
-                expect(response.statusCode).toBe(200)
-                expect(result.bicicletas.length).toBe(0)
-                done()
+    describe("GET Bicicletas", () => {
+        it("Status ok-200", (done) => {
+            request.get(base_url, function (err, res, body) {
+                var result = JSON.parse(body);
+                expect(res.statusCode).toBe(200);
+                expect(result.bicis.length).toBe(0);
             });
-        })
-    })
+            done();
+        });
+    });
 
-    describe('POST_BICICLETA /create', () => {
-        it('STATUS 200', (done) => {
-            var headers = {"content-type": "application/json"}
-            var bici = '{ "code": 10, "color":"rojo", "modelo":"urbano", "lat": 48.1879864 , "lng": 16.3181423}'
+    describe("POST Bicicletas /create", () => {
+        it("Creacion de bicicleta", (done) => {
+            var headers = {
+                "content-type": "application/json",
+            };
+            var biciA = '{"code":2,"color":"blanco","modelo":"urbano","ltd":-34,"lng":-45} ';
             request.post({
-                headers: headers,
-                url: base_url + "/create",
-                body: bici
-            }, function (error, response, body){
-                expect(response.statusCode).toBe(200)
-                var bici = JSON.parse(body).bicicleta
-                console.log(bici)
-
-                expect(bici.color).toBe("rojo")
-                expect(bici.modelo).toBe("urbano")
-                expect(ubicacion[0]).toBe(48.1879864)
-                expect(ubicacion[1]).toBe(16.3181423)
-                done()
-            })
-        })
-    })
-
-    describe('DELETE_BICICLETA /delete', ()=> {
-        it('STATUS 204', (done) => {
-            var bici = Bicicleta.createInstance(1, "verde", "urbana", [-34.5, -15]);
-            Bicicleta.add(a, function(error, newBici){
-                var headers = {"content-type": "application/json"}
-                var aBici = '{"code" :  }'
-                request.post({
                     headers: headers,
-                    url: base_url + "/delete",
-                    body: aBici
-                }, function (error, response, body){
-                    expect(response.statusCode).toBe(204)
-                    expect(Bicicletas.allBicis.length).toBe(0)
+                    url: "http://localhost:3000/api/bicicletas/create",
+                    body: biciA,
+                },
+                function (err, res, body) {
+                    Bicicleta.findByCode(2).then((result) => (expect(result.color).toBe("blanco")));
+                    expect(res.statusCode).toBe(200);
+                    done();
+                }
+            );
+        });
+    });
 
-                    done()
-                })
-            })
-        })
-    })
-})
+    describe("Update Bicicletas /update", () => {
+        it("Actualizar  bicicleta", (done) => {
+            var headers = {
+                "content-type": "application/json",
+            };
+            var biciA = '{"code":2,"color":"blanco","modelo":"urbano","ltd":-34,"lng":-45} ';
+            request.post({
+                    headers: headers,
+                    url: "http://localhost:3000/api/bicicletas/create",
+                    body: biciA,
+                },
+                function (err, res, body) {
+                    request.put({
+                            headers: headers,
+                            url: "http://localhost:3000/api/bicicletas/update",
+                            body: '{"code":2,"color":"Azul","modelo":"rural"}',
+                        },
+                        function (err_up, update_, update_bici) {
+                            var bici = JSON.parse(update_bici)
+                            expect(bici.bicicleta.color).toBe("Azul");
+                            expect(bici.bicicleta.modelo).toBe("rural");
+                            done();
+                        }
+                    );
+                });
+
+
+        });
+    });
+
+    describe("Update Bicicletas /update", () => {
+        it("Actualizar  bicicleta", (done) => {
+            var headers = {
+                "content-type": "application/json",
+            };
+            var biciA = '{"code":2,"color":"blanco","modelo":"urbano","ltd":-34,"lng":-45} ';
+            request.post({
+                    headers: headers,
+                    url: "http://localhost:3000/api/bicicletas/create",
+                    body: biciA,
+                },
+                function (err, res, body) {
+                    request.delete({
+                            headers: headers,
+                            url: "http://localhost:3000/api/bicicletas/delete",
+                            body: '{"code":2}'
+                        },
+                        function (err_up, response) {
+                            expect(response.statusCode).toBe(204);
+                            Bicicleta.findOne({code:2}).then((result)=>{
+                                expect(result).toBe(null);
+                            });
+                            done();
+                        }
+                    );
+                });
+
+
+        });
+    });
+});

@@ -1,0 +1,46 @@
+extends ../layout
+
+block content
+    
+    include ../nav
+    .masthead
+     .container.h-100  
+        .row.h-100
+            .col-sm-12.my-auto
+                .card.card-block.w-100.mx-auto(style="opacity:0.90")
+                    .card-header.bg-transparent 
+                        h3.text-center(style="text-color:black;font-weight:800;font-style:oblique") USUARIOS
+                    .card-body
+                        a.link-button(href="/usuarios/create" style="margin:20px;") Nueva usuario
+                        .table-responsive
+                            table.table.table-hover
+                                thead
+                                    tr
+                                        th(scope='col') #
+                                        th(scope='col') Nombre
+                                        th(scope='col') Email
+                                        th(scope='col') Verificado
+                                        th(scope='col')
+                                        th(scope='col')
+                                tbody
+                                    each usuario in usuarios
+                                        tr(data-href="/usuarios/"+usuario.id+"/update")
+                                            td(scope='row')=usuario.id
+                                            td=usuario.nombre
+                                            td=usuario.email
+                                            td=usuario.verificado? "SI":"NO"
+                                            td
+                                                form.inline(method="post" action ="usuarios/"+usuario.id+"/delete")
+                                                    input(type="hidden" name="id" value=usuario.id)
+                                                    button.link-button(type="submit" name="submit_param" value="submit_value" class="btn") Eliminar
+
+    script. 
+        document.addEventListener('DOMContentLoaded', function () {
+            var a = document.querySelectorAll("table tr")
+            for (var i=1 ; i<a.length;i++){
+                    a[i].onclick=function(){
+                        window.location=this.dataset.href
+                    }  ;                          
+            }
+        });
+    
